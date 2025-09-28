@@ -1,12 +1,10 @@
 import { UUID } from '../../shared/types';
-import { SelectedVariant } from '../value-objects/selected-variant';
-
 export interface VoteSessionProps {
   id: UUID;
   comparisonId: UUID;
   userId: UUID;
   idempotencyKey: string;
-  selectedVariant: UUID;
+  variantId: UUID;
   comment?: string | null;
   turnstileVerified: boolean;
   createdAt: Date;
@@ -38,8 +36,8 @@ export class VoteSession {
     return this.props.idempotencyKey;
   }
 
-  get selectedVariantId() {
-    return this.props.selectedVariant;
+  get variantId() {
+    return this.props.variantId;
   }
 
   get comment() {

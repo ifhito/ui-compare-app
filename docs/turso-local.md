@@ -12,12 +12,15 @@
 docker compose up -d turso
 ```
 
+Apple Silicon (ARM) 環境では `platform: linux/amd64` の指定が必要です。`docker-compose.yml` に既に記載されています。
+
 `docker compose` が使用できない場合は以下コマンドでも同様に起動できます。
 ```bash
 docker run --rm \
   -p 8080:8080 \
   -p 5001:5001 \
   -v "$(pwd)/db/data:/var/lib/libsql" \
+  --platform linux/amd64 \
   ghcr.io/tursodatabase/libsql-server:v0.24.32 \
   --http-listen-addr=0.0.0.0:8080 \
   --hrana-listen-addr=0.0.0.0:5001 \

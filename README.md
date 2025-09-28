@@ -65,6 +65,7 @@ docker compose up -d turso           # Turso (libSQL) を起動
 
 - 初回マイグレーションで `db/migrations/0001_schema.sql` と `0002_add_turnstile_verified.sql` が適用されます。
 - 詳細は `docs/turso-local.md` を参照してください。
+- Apple Silicon (ARM) 環境では、`docker-compose.yml` 内の `platform: linux/amd64` 指定によりイメージを正しく起動できます。
 
 ### Terraform による本番/ステージング構築
 ```

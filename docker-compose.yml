@@ -1,15 +1,10 @@
 services:
   turso:
-    image: ghcr.io/tursodatabase/libsql-server:v0.24.32
+    image: ghcr.io/tursodatabase/libsql-server:latest
+    platform: linux/amd64
     container_name: ui-compare-turso
     ports:
       - "8080:8080"
       - "5001:5001"
     volumes:
       - ./db/data:/var/lib/libsql
-    command:
-      - "--http-listen-addr=0.0.0.0:8080"
-      - "--hrana-listen-addr=0.0.0.0:5001"
-      - "--dir=/var/lib/libsql"
-      - "--no-auth"
-    restart: unless-stopped

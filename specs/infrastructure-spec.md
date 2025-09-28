@@ -40,7 +40,7 @@
 ### 3.3 バックアップ/メンテナンス
 - 毎日スナップショットを取得し、90日保管
 - スキーマ変更は `db/migrations` をソースとし、CI/CD で `turso` CLI を使って適用（Terraform からは管理しない）
-- ローカル開発では `docker compose up turso` → `./scripts/apply-migrations.sh` で検証
+- ローカル開発では `docker compose up turso` → `./scripts/apply-migrations.sh` で検証（Apple Silicon の場合は `platform: linux/amd64` を指定）
 
 ## 4. Firebase Authentication
 ### 4.1 プロジェクト設定

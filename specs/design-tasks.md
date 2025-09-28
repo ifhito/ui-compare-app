@@ -17,6 +17,7 @@
 - [ ] バウンデッドコンテキスト（Comparison / Voting / User / Analytics）と責務境界を定義し、依存関係図を作成
 - [ ] DDD レイヤ構成（domain / application / infrastructure / interfaces）とモジュール分割ポリシーを決定
 - [ ] OpenAPI 仕様 (`specs/openapi.yaml`) の初期ドラフトを確定し、バージョニング/レビュー手順を定義
+- [ ] Cloudflare Pages / Workers / Turso を Terraform でプロビジョニングする計画と `infra/terraform` モジュール構成をレビュー
 
 ## 3. データモデル
 - [ ] エンティティ/リレーション図（ERD）を作成し、`users`, `ui_entries`, `ui_variants`, `votes`, `vote_sessions` などのカラム定義を含める（1案件最大4案）
@@ -68,6 +69,7 @@
 - [ ] ステージング / 本番のブランチ戦略とデプロイ承認フローを策定
 - [ ] CDN キャッシュ戦略（静的アセットの TTL、投票APIのキャッシュ無効化、プレビューコンテンツのキャッシュ扱い）を定める
 - [ ] 定期バックアップ（Turso スナップショット、StackBlitz プロジェクトバックアップ）の計画を作成
+- [ ] Terraform state 管理ポリシー（Terraform Cloud / S3 + KMS 等）と環境別 `tfvars` の運用ルールを策定
 
 ## 9. オブザーバビリティ
 - [ ] Sentry や Logflare の導入判断と初期設定（DSN、環境タグ、ログレベル）を実施

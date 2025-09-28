@@ -4,6 +4,8 @@
 - アプリデプロイ
     - Cloudflare Workers（投票APIおよびSSR/Edge Functionsを配置）
     - 必要に応じて Cloudflare Pages でフロントをホスト
+- IaC
+    - Terraform (`infra/terraform/`) で Cloudflare Pages / Workers / Turso を管理
 - UIプレビューサンドボックス
     - StackBlitz WebContainers（`embed.stackblitz.com` を `view=preview` で iframe 埋め込みし、UIのみを表示）
 - CDN/配信

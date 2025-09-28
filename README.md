@@ -35,10 +35,9 @@ StackBlitz WebContainers 上で動作する UI バリアントを共有し、投
 3. バックエンドは `specs/backend-spec.md` の DDD 指針に沿って実装
 4. 仕様変更時は必ず該当する `specs/` 内のドキュメントと OpenAPI を更新
 
-### ローカル DB (Turso / libSQL)
-- `docker compose up turso` でローカル DB を起動
-- `DATABASE_URL=http://127.0.0.1:8080 ./scripts/apply-migrations.sh` でマイグレーション適用
-- 詳細は `docs/turso-local.md` を参照
+### インフラ構築
+- IaC: `infra/terraform/` に Terraform 定義を格納。`terraform apply -var-file=<env>.tfvars` で Cloudflare Pages/Workers と Turso をプロビジョニング
+- ローカル DB: `docker compose up turso` → `./scripts/apply-migrations.sh` で起動・マイグレーション（詳細は `docs/turso-local.md`）
 
 ## コントリビューション
 - ルールは `AGENTS.md` を参照（命名規則やフォーマッタ運用など）

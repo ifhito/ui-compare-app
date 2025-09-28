@@ -10,31 +10,16 @@
 - UIプレビュー: StackBlitz WebContainers でホストされる埋め込み iframe
 - 監視: Cloudflare Analytics, Sentry/Logflare
 
-## 2. Cloudflare 環境
+## 2. Cloudflare 環境 (IaC 管理)
 ### 2.1 Pages
-- リポジトリと連携し、自動デプロイを設定
-- Build コマンド: `pnpm install && pnpm build`
-- Build Output: `dist/`
-- 環境変数
-  - `VITE_FIREBASE_API_KEY` などクライアントに公開される値は Pages デプロイ設定から付与
-  - `VITE_STACKBLITZ_EMBED_ORIGIN=https://embed.stackblitz.com`
-- Branch マッピング
-  - `main`: Production
-  - `develop`: Preview/Staging
+- Terraform モジュール `infra/terraform/modules/cloudflare_pages` を使用し、GitHub 連携・ビルド設定・環境変数をコード化
+- `env_vars` に `VITE_FIREBASE_API_KEY`, `VITE_STACKBLITZ_EMBED_ORIGIN` を設定。`preview_branch_includes` でプレビュー対象ブランチを制御
+- Terraform 変数経由でビルドコマンド (`pnpm install && pnpm build`) や `dist/` 出力を設定し、`terraform apply` で Pages プロジェクトを作成
 
 ### 2.2 Workers
-- `wrangler.toml` をルートに配置し、以下を定義
-  - `name`: `ui-compare-api`
-  - `main`: `dist/worker/index.mjs`
-  - `compatibility_date`: 毎月更新
-  - `routes`: `api.example.com/*`
-- Secrets 管理
-  - `wrangler secret put FIREBASE_PROJECT_ID`
-  - `wrangler secret put TURSO_CONNECTION_URL`
-  - `wrangler secret put TURSO_AUTH_TOKEN`
-  - `wrangler secret put STACKBLITZ_WEBHOOK_SECRET`
-- KV / Durable Objects
-  - キャッシュ用に Workers KV を利用する場合は `wrangler.toml` にバインディングを追加
+- Terraform モジュール `infra/terraform/modules/cloudflare_workers` で Worker スクリプトをアップロードし、ルート・Secrets を宣言管理
+- `cloudflare_worker_secret` リソースで Firebase/Turso/StackBlitz のシークレットを登録。`compatibility_date` や `route_pattern` も IaC で設定
+- Secrets は Terraform state に格納されるため、Terraform Cloud もしくは暗号化リモートステート (S3 + KMS 等) を利用して保護
 
 ### 2.3 セキュリティ設定
 - Cloudflare Access / Turnstile を利用する場合はポリシーとサイトキーを設定
@@ -42,9 +27,9 @@
 - HTTPS リダイレクトと HSTS を有効化
 
 ## 3. TursoDB
-### 3.1 インスタンス作成
-- `turso db create ui-compare` でデータベースを作成
-- 地理的レプリカを必要に応じて追加（例: `turso db replicate ui-compare fra`）
+### 3.1 インスタンス作成 (Terraform)
+- Terraform モジュール `infra/terraform/modules/turso` で `turso_database` を作成し、`turso_database_replica` でレプリカを追加
+- `turso_api_token`・`turso_database_name` などは `*.tfvars` で環境ごとに切り替え
 
 ### 3.2 接続設定
 - 総当たり攻撃防止のため IP allowlist を設定（Workers 経由のみ）
@@ -53,9 +38,8 @@
 
 ### 3.3 バックアップ/メンテナンス
 - 毎日スナップショットを取得し、90日保管
-- スキーマ変更は `migrations/` ディレクトリの SQL を `turso db shell` から適用
-- 本番適用前にステージングで検証
-- ローカル開発では `docker compose up turso` で libSQL サーバを起動し、`scripts/apply-migrations.sh` でマイグレーションを流す (`libsql` CLI を使用)
+- スキーマ変更は `db/migrations` をソースとし、CI/CD で `turso` CLI を使って適用（Terraform からは管理しない）
+- ローカル開発では `docker compose up turso` → `./scripts/apply-migrations.sh` で検証
 
 ## 4. Firebase Authentication
 ### 4.1 プロジェクト設定

@@ -8,7 +8,7 @@
 
 ## 2. Docker Compose を利用した起動
 ```bash
-# Turso (sqld) サーバを起動
+# Turso (libsql-server) サーバを起動
 docker compose up -d turso
 ```
 
@@ -17,13 +17,12 @@ docker compose up -d turso
 docker run --rm \
   -p 8080:8080 \
   -p 5001:5001 \
-  -v "$(pwd)/db/data:/var/lib/sqld" \
-  ghcr.io/tursodatabase/sqld:latest \
-  sqld \
-    --http-listen-addr=0.0.0.0:8080 \
-    --hrana-listen-addr=0.0.0.0:5001 \
-    --dir=/var/lib/sqld \
-    --no-auth
+  -v "$(pwd)/db/data:/var/lib/libsql" \
+  ghcr.io/tursodatabase/libsql-server:v0.24.32 \
+  --http-listen-addr=0.0.0.0:8080 \
+  --hrana-listen-addr=0.0.0.0:5001 \
+  --dir=/var/lib/libsql \
+  --no-auth
 ```
 
 - HTTP API: `http://127.0.0.1:8080`

@@ -55,6 +55,7 @@
 - 毎日スナップショットを取得し、90日保管
 - スキーマ変更は `migrations/` ディレクトリの SQL を `turso db shell` から適用
 - 本番適用前にステージングで検証
+- ローカル開発では `docker compose up turso` で libSQL サーバを起動し、`scripts/apply-migrations.sh` でマイグレーションを流す (`libsql` CLI を使用)
 
 ## 4. Firebase Authentication
 ### 4.1 プロジェクト設定

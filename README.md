@@ -35,6 +35,11 @@ StackBlitz WebContainers 上で動作する UI バリアントを共有し、投
 3. バックエンドは `specs/backend-spec.md` の DDD 指針に沿って実装
 4. 仕様変更時は必ず該当する `specs/` 内のドキュメントと OpenAPI を更新
 
+### ローカル DB (Turso / libSQL)
+- `docker compose up turso` でローカル DB を起動
+- `DATABASE_URL=http://127.0.0.1:8080 ./scripts/apply-migrations.sh` でマイグレーション適用
+- 詳細は `docs/turso-local.md` を参照
+
 ## コントリビューション
 - ルールは `AGENTS.md` を参照（命名規則やフォーマッタ運用など）
 - 作業は `feature/<topic>` ブランチで行い、PR 前に lint / test を実行
@@ -42,4 +47,3 @@ StackBlitz WebContainers 上で動作する UI バリアントを共有し、投
 
 ## 現状ステータス
 現在は設計フェーズであり、実装コードは未着手です。ドキュメント群をレビューし、`specs/design-review.md` の指摘事項を解決しながら開発タスクを進めてください。
-

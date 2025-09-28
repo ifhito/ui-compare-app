@@ -115,14 +115,14 @@ package.json
 - ERD (抜粋)
   - `comparisons` (id, owner_id, title, summary, status, published_at, expires_at, created_at)
   - `comparison_variants` (id, comparison_id, label, stackblitz_url, thumbnail_url, display_order)
-  - `votes` (id, comparison_id, variant_id, user_id, comment, created_at)
-  - `vote_sessions` (id, comparison_id, user_id, submitted_at)
+- `votes` (id, vote_session_id, comparison_id, variant_id, comment, created_at)
+- `vote_sessions` (id, comparison_id, user_id, idempotency_key, created_at)
 - リポジトリインターフェース
   - `ComparisonRepository` : `save`, `findById`, `findPublished`, `listByOwner`
-  - `VoteRepository` : `save`, `countByComparison`, `listRecent`
-  - `VoteSessionRepository` : `existsByComparisonAndUser`
+- `VoteRepository` : `save`, `countByComparison`, `listRecent`
+- `VoteSessionRepository` : `findByIdempotencyKey`, `createWithIdempotency`
 - インフラ実装では SQL テンプレートを `sql/` に分離し、Prepared Statement を利用
-- アプリケーション層ではトランザクション境界を明示し、複数リポジトリ操作時は `executeInTransaction` を利用
+- アプリケーション層ではトランザクション境界を明示し、`SubmitVote` では `BEGIN IMMEDIATE` → `INSERT vote_sessions ... ON CONFLICT DO NOTHING` → `INSERT votes ...` → `COMMIT` の順に実行。`vote_sessions` 挿入で衝突した場合は冪等性エラーを返却
 
 ## 9. 認証・認可
 - Firebase IDトークン検証結果を `AuthUser` 値オブジェクトに変換

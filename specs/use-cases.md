@@ -50,9 +50,10 @@ DDDアーキテクチャで実装する主要ユースケースをコマンド/�
 - **主シナリオ**:
   1. 投票者が比較詳細ページで variant を選択しコメントを入力
   2. `VotingPolicyService` が Turnstile とレート制限を確認
-  3. `VoteSession` 集約が生成され、`Vote` 値オブジェクトを保持
-  4. `VoteSessionRepository` と `VoteRepository` へ永続化（トランザクション）
-  5. `VoteSubmitted` イベントを発火し、集計更新をトリガー
+  3. `VoteSession` 集約が生成され、`idempotencyKey = comparisonId:userId` を設定
+  4. `BEGIN IMMEDIATE` でトランザクションを開始し、`vote_sessions` へ `ON CONFLICT(idempotency_key) DO NOTHING` で挿入。既に存在する場合は `DomainError('duplicate_vote')`
+  5. 続けて `votes` を挿入しコミット
+  6. `VoteSubmitted` イベントを発火し、集計更新をトリガー
 - **代替シナリオ**:
   - 既に投票済み → `DomainError('duplicate_vote')`
   - 公開期間外 → `DomainError('comparison_closed')`

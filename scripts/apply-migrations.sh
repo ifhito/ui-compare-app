@@ -14,18 +14,18 @@ if [ ! -d "$MIGRATIONS_DIR" ]; then
   exit 1
 fi
 
-shopt -s nullglob
-mapfile -t files < <(find "$MIGRATIONS_DIR" -maxdepth 1 -type f -name '*.sql' | sort)
-shopt -u nullglob
+files=$(find "$MIGRATIONS_DIR" -maxdepth 1 -type f -name '*.sql' -print | sort)
 
-if [ "${#files[@]}" -eq 0 ]; then
+if [ -z "$files" ]; then
   echo "warning: no migration files found in $MIGRATIONS_DIR" >&2
   exit 0
 fi
 
-for file in "${files[@]}"; do
+IFS=$'\n'
+for file in $files; do
   echo "Applying migration: $file"
   turso db shell "$DATABASE_URL" < "$file"
 done
+unset IFS
 
 echo "Migrations applied successfully"

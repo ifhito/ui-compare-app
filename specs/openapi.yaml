@@ -1,0 +1,587 @@
+openapi: 3.0.3
+info:
+  title: UI Compare API
+  version: 1.0.0
+  description: >-
+    API specification for the UI comparison and voting platform. Authentication
+    is handled via Firebase ID tokens supplied as Bearer tokens.
+servers:
+  - url: https://api.example.com
+    description: Production Cloudflare Workers endpoint
+  - url: https://staging-api.example.com
+    description: Staging environment
+security:
+  - FirebaseAuth: []
+paths:
+  /api/v1/health:
+    get:
+      summary: Health check
+      tags: [Meta]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /api/v1/comparisons:
+    get:
+      summary: List published comparisons
+      tags: [Comparisons]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [popular, recent, closingSoon]
+            default: recent
+        - in: query
+          name: tag
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of comparisons
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonListResponse'
+    post:
+      summary: Create a new comparison
+      tags: [Comparisons]
+      security:
+        - FirebaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateComparisonRequest'
+      responses:
+        '201':
+          description: Comparison created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/comparisons/{comparisonId}:
+    get:
+      summary: Get comparison detail
+      tags: [Comparisons]
+      parameters:
+        - $ref: '#/components/parameters/ComparisonId'
+      responses:
+        '200':
+          description: Comparison detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Update comparison
+      tags: [Comparisons]
+      security:
+        - FirebaseAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ComparisonId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateComparisonRequest'
+      responses:
+        '200':
+          description: Comparison updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/comparisons/{comparisonId}/publish:
+    post:
+      summary: Publish comparison
+      tags: [Comparisons]
+      security:
+        - FirebaseAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ComparisonId'
+      responses:
+        '204':
+          description: Comparison published
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/comparisons/{comparisonId}/results:
+    get:
+      summary: Get comparison results
+      tags: [Voting]
+      parameters:
+        - $ref: '#/components/parameters/ComparisonId'
+      responses:
+        '200':
+          description: Aggregated voting results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonResultsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/votes:
+    post:
+      summary: Submit a vote
+      tags: [Voting]
+      security:
+        - FirebaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitVoteRequest'
+      responses:
+        '201':
+          description: Vote recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/me/comparisons:
+    get:
+      summary: List comparisons owned by current user
+      tags: [My]
+      security:
+        - FirebaseAuth: []
+      responses:
+        '200':
+          description: Owned comparisons
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/me/analytics:
+    get:
+      summary: Analytics for the current user's comparisons
+      tags: [My]
+      security:
+        - FirebaseAuth: []
+      responses:
+        '200':
+          description: Analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/webhooks/stackblitz:
+    post:
+      summary: Handle StackBlitz project update webhook
+      tags: [Integrations]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '202':
+          description: Webhook accepted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/admin/recalculate:
+    post:
+      summary: Recalculate voting analytics (admin)
+      tags: [Admin]
+      security:
+        - FirebaseAuth: []
+      responses:
+        '202':
+          description: Recalculation started
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    FirebaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Firebase ID token (JWT) issued to authenticated users.
+  parameters:
+    ComparisonId:
+      in: path
+      name: comparisonId
+      description: Comparison identifier (UUID)
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Invalid or missing authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Operation forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflict (duplicate action)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        timestamp:
+          type: string
+          format: date-time
+    ComparisonListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comparison'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    ComparisonResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Comparison'
+    Comparison:
+      type: object
+      required: [id, title, summary, status, ownerId, variants]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        summary:
+          type: string
+        status:
+          type: string
+          enum: [draft, published, closed]
+        tags:
+          type: array
+          items:
+            type: string
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        variants:
+          type: array
+          minItems: 2
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/Variant'
+    Variant:
+      type: object
+      required: [id, label, stackblitzUrl, displayOrder]
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        stackblitzUrl:
+          type: string
+          format: uri
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+        displayOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    CreateComparisonRequest:
+      type: object
+      required: [title, summary, variants, publishedAt, expiresAt]
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        publishedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        variants:
+          type: array
+          minItems: 2
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/CreateVariant'
+    CreateVariant:
+      type: object
+      required: [label, stackblitzUrl]
+      properties:
+        label:
+          type: string
+        stackblitzUrl:
+          type: string
+          format: uri
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+    UpdateComparisonRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        publishedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        variants:
+          type: array
+          minItems: 2
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/UpdateVariant'
+        status:
+          type: string
+          enum: [draft, published, closed]
+    UpdateVariant:
+      allOf:
+        - $ref: '#/components/schemas/CreateVariant'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            displayOrder:
+              type: integer
+    SubmitVoteRequest:
+      type: object
+      required: [comparisonId, variantId, turnstileToken]
+      properties:
+        comparisonId:
+          type: string
+          format: uuid
+        variantId:
+          type: string
+          format: uuid
+        comment:
+          type: string
+          maxLength: 500
+        turnstileToken:
+          type: string
+    VoteResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/VoteRecord'
+    VoteRecord:
+      type: object
+      properties:
+        voteSessionId:
+          type: string
+          format: uuid
+        variantId:
+          type: string
+          format: uuid
+        submittedAt:
+          type: string
+          format: date-time
+    ComparisonResultsResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            comparisonId:
+              type: string
+              format: uuid
+            totalVotes:
+              type: integer
+            breakdown:
+              type: array
+              items:
+                $ref: '#/components/schemas/VariantResult'
+            timeline:
+              type: array
+              items:
+                $ref: '#/components/schemas/TimelinePoint'
+            comments:
+              type: array
+              items:
+                $ref: '#/components/schemas/VoteComment'
+    VariantResult:
+      type: object
+      properties:
+        variantId:
+          type: string
+          format: uuid
+        label:
+          type: string
+        votes:
+          type: integer
+        percentage:
+          type: number
+          format: float
+    TimelinePoint:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        variantVotes:
+          type: object
+          additionalProperties:
+            type: integer
+    VoteComment:
+      type: object
+      properties:
+        variantId:
+          type: string
+          format: uuid
+        comment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    AnalyticsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparisonAnalytics'
+    ComparisonAnalytics:
+      type: object
+      properties:
+        comparisonId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        totalVotes:
+          type: integer
+        conversionRate:
+          type: number
+        dailyBreakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelinePoint'
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+        totalItems:
+          type: integer
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        traceId:
+          type: string

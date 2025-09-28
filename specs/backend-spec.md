@@ -76,6 +76,10 @@ package.json
   - `FirebaseAuthVerifier` : IDトークン検証
   - `StackBlitzMetadataClient` : プロジェクトサムネイル取得（任意）
   - `TurnstileValidator`
+- Webhook セキュリティ
+  - `StackBlitzSignatureVerifier`: `X-StackBlitz-Signature` ヘッダを検証。`t=<unix time>,v1=<signature>` 形式を解析し、`secret` と `timestamp.payload` の HMAC-SHA256 で照合
+  - デフォルトの許容遅延は 300 秒。経過時間が閾値を超えた場合は拒否し、リプレイ攻撃を防止
+  - 署名検証ユーティリティは `src/webhooks/stackblitz.js` に配置し、Vitest による単体テストでカバー
 - DI 容器（軽量ファクトリ）で依存性を束ね、`bootstrap.ts` で初期化
 
 ## 6. インターフェース層 (Hono)
@@ -83,6 +87,7 @@ package.json
   - `registerComparisonRoutes(app, handlers)` などとしてユースケースを注入
 - 1 ルート = 1 ユースケース呼び出しを基本とし、リクエストDTO → アプリケーション → ドメイン
 - OpenAPI 定義のソースは `specs/openapi.yaml`。`pnpm generate:api` でルートハンドラの型を同期し、CI では `spectral lint specs/openapi.yaml` でバリデーション
+- StackBlitz Webhook ルートは `StackBlitzSignatureVerifier` ミドルウェアを適用し、署名/タイムスタンプ検証で失敗した場合は 401 を返却
 
 ### 6.1 API（変更なし）
 - 公開API

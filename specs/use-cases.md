@@ -62,9 +62,9 @@ DDDアーキテクチャで実装する主要ユースケースをコマンド/�
 - **アクター**: StackBlitz Webhook
 - **目的**: プロジェクト更新時にサムネイルやメタ情報を再取得
 - **主シナリオ**:
-  1. Webhook が更新イベントを送信
-  2. 署名検証を通過後、該当 `Comparison` を検索
-  3. 最新サムネイルを取得し `ComparisonUpdated` イベント発火
+  1. Webhook が `X-StackBlitz-Signature` ヘッダ付きでイベントを送信
+  2. HMAC-SHA256 署名とタイムスタンプを検証し、リプレイ保護閾値（既定 5 分）を満たさない場合は 401 応答
+  3. 署名が有効な場合のみ該当 `Comparison` を検索し、最新サムネイルを取得して `ComparisonUpdated` イベント発火
 
 ### 1.6 RecalculateAnalytics (管理者)
 - **コンテキスト**: Voting/Analytics

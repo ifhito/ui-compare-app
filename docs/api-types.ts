@@ -6,222 +6,84 @@
 
 export interface paths {
   "/api/v1/health": {
-    /** Health check */
-    get: {
-      responses: {
-        /** @description Service is healthy */
-        200: {
-          content: {
-            "application/json": components["schemas"]["HealthResponse"];
-          };
-        };
-      };
-    };
+    /**
+     * Health check
+     * @description Returns the service status for monitoring systems.
+     */
+    get: operations["getHealth"];
   };
   "/api/v1/comparisons": {
-    /** List published comparisons */
-    get: {
-      parameters: {
-        query?: {
-          page?: number;
-          pageSize?: number;
-          sort?: "popular" | "recent" | "closingSoon";
-          tag?: string;
-        };
-      };
-      responses: {
-        /** @description List of comparisons */
-        200: {
-          content: {
-            "application/json": components["schemas"]["ComparisonListResponse"];
-          };
-        };
-      };
-    };
-    /** Create a new comparison */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["CreateComparisonRequest"];
-        };
-      };
-      responses: {
-        /** @description Comparison created */
-        201: {
-          content: {
-            "application/json": components["schemas"]["ComparisonResponse"];
-          };
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-      };
-    };
+    /**
+     * List published comparisons
+     * @description Returns a paginated list of active or recently published comparisons.
+     */
+    get: operations["listComparisons"];
+    /**
+     * Create a new comparison
+     * @description Creates a draft comparison containing up to four StackBlitz-backed variants.
+     */
+    post: operations["createComparison"];
   };
   "/api/v1/comparisons/{comparisonId}": {
-    /** Get comparison detail */
-    get: {
-      parameters: {
-        path: {
-          comparisonId: components["parameters"]["ComparisonId"];
-        };
-      };
-      responses: {
-        /** @description Comparison detail */
-        200: {
-          content: {
-            "application/json": components["schemas"]["ComparisonResponse"];
-          };
-        };
-        404: components["responses"]["NotFound"];
-      };
-    };
-    /** Update comparison */
-    patch: {
-      parameters: {
-        path: {
-          comparisonId: components["parameters"]["ComparisonId"];
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["UpdateComparisonRequest"];
-        };
-      };
-      responses: {
-        /** @description Comparison updated */
-        200: {
-          content: {
-            "application/json": components["schemas"]["ComparisonResponse"];
-          };
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-      };
-    };
+    /**
+     * Get comparison detail
+     * @description Fetches metadata and variant information for a specific comparison.
+     */
+    get: operations["getComparison"];
+    /**
+     * Update comparison
+     * @description Updates comparison metadata or variants when the caller owns the resource.
+     */
+    patch: operations["updateComparison"];
   };
   "/api/v1/comparisons/{comparisonId}/publish": {
-    /** Publish comparison */
-    post: {
-      parameters: {
-        path: {
-          comparisonId: components["parameters"]["ComparisonId"];
-        };
-      };
-      responses: {
-        /** @description Comparison published */
-        204: {
-          content: never;
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        404: components["responses"]["NotFound"];
-      };
-    };
+    /**
+     * Publish comparison
+     * @description Transitions a comparison from draft to published status after validation passes.
+     */
+    post: operations["publishComparison"];
   };
   "/api/v1/comparisons/{comparisonId}/results": {
-    /** Get comparison results */
-    get: {
-      parameters: {
-        path: {
-          comparisonId: components["parameters"]["ComparisonId"];
-        };
-      };
-      responses: {
-        /** @description Aggregated voting results */
-        200: {
-          content: {
-            "application/json": components["schemas"]["ComparisonResultsResponse"];
-          };
-        };
-        404: components["responses"]["NotFound"];
-      };
-    };
+    /**
+     * Get comparison results
+     * @description Returns aggregated vote counts, percentages, timeline and comment samples for a comparison.
+     */
+    get: operations["getComparisonResults"];
   };
   "/api/v1/votes": {
-    /** Submit a vote */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": components["schemas"]["SubmitVoteRequest"];
-        };
-      };
-      responses: {
-        /** @description Vote recorded */
-        201: {
-          content: {
-            "application/json": components["schemas"]["VoteResponse"];
-          };
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-        409: components["responses"]["Conflict"];
-      };
-    };
+    /**
+     * Submit a vote
+     * @description Records a single vote for one variant within a comparison, enforcing per-user limits.
+     */
+    post: operations["submitVote"];
   };
   "/api/v1/me/comparisons": {
-    /** List comparisons owned by current user */
-    get: {
-      responses: {
-        /** @description Owned comparisons */
-        200: {
-          content: {
-            "application/json": components["schemas"]["ComparisonListResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-      };
-    };
+    /**
+     * List owned comparisons
+     * @description Returns comparisons created by the currently authenticated user.
+     */
+    get: operations["listMyComparisons"];
   };
   "/api/v1/me/analytics": {
-    /** Analytics for the current user's comparisons */
-    get: {
-      responses: {
-        /** @description Analytics summary */
-        200: {
-          content: {
-            "application/json": components["schemas"]["AnalyticsResponse"];
-          };
-        };
-        401: components["responses"]["Unauthorized"];
-      };
-    };
+    /**
+     * Get analytics for owned comparisons
+     * @description Provides aggregated analytics for the authenticated user’s comparisons.
+     */
+    get: operations["getMyAnalytics"];
   };
   "/api/v1/webhooks/stackblitz": {
-    /** Handle StackBlitz project update webhook */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
-        };
-      };
-      responses: {
-        /** @description Webhook accepted */
-        202: {
-          content: never;
-        };
-        400: components["responses"]["BadRequest"];
-        401: components["responses"]["Unauthorized"];
-      };
-    };
+    /**
+     * StackBlitz project update webhook
+     * @description Accepts webhook notifications from StackBlitz to refresh project metadata. Requests must be signed.
+     */
+    post: operations["handleStackblitzWebhook"];
   };
   "/api/v1/admin/recalculate": {
-    /** Recalculate voting analytics (admin) */
-    post: {
-      responses: {
-        /** @description Recalculation started */
-        202: {
-          content: never;
-        };
-        401: components["responses"]["Unauthorized"];
-        403: components["responses"]["Forbidden"];
-      };
-    };
+    /**
+     * Recalculate analytics (admin)
+     * @description Triggers background recomputation of analytics data. Restricted to administrators.
+     */
+    post: operations["recalculateAnalytics"];
   };
 }
 
@@ -417,6 +279,8 @@ export interface components {
   parameters: {
     /** @description Comparison identifier (UUID) */
     ComparisonId: string;
+    /** @description Signature header in the format `t=unix_timestamp,v1=HMAC_SHA256`. Used to verify that the webhook payload originated from StackBlitz. */
+    StackblitzSignature: string;
   };
   requestBodies: never;
   headers: never;
@@ -427,4 +291,245 @@ export type $defs = Record<string, never>;
 
 export type external = Record<string, never>;
 
-export type operations = Record<string, never>;
+export interface operations {
+
+  /**
+   * Health check
+   * @description Returns the service status for monitoring systems.
+   */
+  getHealth: {
+    responses: {
+      /** @description Service is healthy */
+      200: {
+        content: {
+          "application/json": components["schemas"]["HealthResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * List published comparisons
+   * @description Returns a paginated list of active or recently published comparisons.
+   */
+  listComparisons: {
+    parameters: {
+      query?: {
+        page?: number;
+        pageSize?: number;
+        sort?: "popular" | "recent" | "closingSoon";
+        tag?: string;
+      };
+    };
+    responses: {
+      /** @description List of comparisons */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ComparisonListResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Create a new comparison
+   * @description Creates a draft comparison containing up to four StackBlitz-backed variants.
+   */
+  createComparison: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateComparisonRequest"];
+      };
+    };
+    responses: {
+      /** @description Comparison created */
+      201: {
+        content: {
+          "application/json": components["schemas"]["ComparisonResponse"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      401: components["responses"]["Unauthorized"];
+    };
+  };
+  /**
+   * Get comparison detail
+   * @description Fetches metadata and variant information for a specific comparison.
+   */
+  getComparison: {
+    parameters: {
+      path: {
+        comparisonId: components["parameters"]["ComparisonId"];
+      };
+    };
+    responses: {
+      /** @description Comparison detail */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ComparisonResponse"];
+        };
+      };
+      404: components["responses"]["NotFound"];
+    };
+  };
+  /**
+   * Update comparison
+   * @description Updates comparison metadata or variants when the caller owns the resource.
+   */
+  updateComparison: {
+    parameters: {
+      path: {
+        comparisonId: components["parameters"]["ComparisonId"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateComparisonRequest"];
+      };
+    };
+    responses: {
+      /** @description Comparison updated */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ComparisonResponse"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+      404: components["responses"]["NotFound"];
+    };
+  };
+  /**
+   * Publish comparison
+   * @description Transitions a comparison from draft to published status after validation passes.
+   */
+  publishComparison: {
+    parameters: {
+      path: {
+        comparisonId: components["parameters"]["ComparisonId"];
+      };
+    };
+    responses: {
+      /** @description Comparison published */
+      204: {
+        content: never;
+      };
+      400: components["responses"]["BadRequest"];
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+      404: components["responses"]["NotFound"];
+    };
+  };
+  /**
+   * Get comparison results
+   * @description Returns aggregated vote counts, percentages, timeline and comment samples for a comparison.
+   */
+  getComparisonResults: {
+    parameters: {
+      path: {
+        comparisonId: components["parameters"]["ComparisonId"];
+      };
+    };
+    responses: {
+      /** @description Aggregated voting results */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ComparisonResultsResponse"];
+        };
+      };
+      404: components["responses"]["NotFound"];
+    };
+  };
+  /**
+   * Submit a vote
+   * @description Records a single vote for one variant within a comparison, enforcing per-user limits.
+   */
+  submitVote: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SubmitVoteRequest"];
+      };
+    };
+    responses: {
+      /** @description Vote recorded */
+      201: {
+        content: {
+          "application/json": components["schemas"]["VoteResponse"];
+        };
+      };
+      400: components["responses"]["BadRequest"];
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+      409: components["responses"]["Conflict"];
+    };
+  };
+  /**
+   * List owned comparisons
+   * @description Returns comparisons created by the currently authenticated user.
+   */
+  listMyComparisons: {
+    responses: {
+      /** @description Owned comparisons */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ComparisonListResponse"];
+        };
+      };
+      401: components["responses"]["Unauthorized"];
+    };
+  };
+  /**
+   * Get analytics for owned comparisons
+   * @description Provides aggregated analytics for the authenticated user’s comparisons.
+   */
+  getMyAnalytics: {
+    responses: {
+      /** @description Analytics summary */
+      200: {
+        content: {
+          "application/json": components["schemas"]["AnalyticsResponse"];
+        };
+      };
+      401: components["responses"]["Unauthorized"];
+    };
+  };
+  /**
+   * StackBlitz project update webhook
+   * @description Accepts webhook notifications from StackBlitz to refresh project metadata. Requests must be signed.
+   */
+  handleStackblitzWebhook: {
+    parameters: {
+      header: {
+        "X-StackBlitz-Signature": components["parameters"]["StackblitzSignature"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": {
+          [key: string]: unknown;
+        };
+      };
+    };
+    responses: {
+      /** @description Webhook accepted */
+      202: {
+        content: never;
+      };
+      400: components["responses"]["BadRequest"];
+      401: components["responses"]["Unauthorized"];
+    };
+  };
+  /**
+   * Recalculate analytics (admin)
+   * @description Triggers background recomputation of analytics data. Restricted to administrators.
+   */
+  recalculateAnalytics: {
+    responses: {
+      /** @description Recalculation started */
+      202: {
+        content: never;
+      };
+      401: components["responses"]["Unauthorized"];
+      403: components["responses"]["Forbidden"];
+    };
+  };
+}

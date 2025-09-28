@@ -2,9 +2,10 @@ openapi: 3.0.3
 info:
   title: UI Compare API
   version: 1.0.0
-  description: >-
-    API specification for the UI comparison and voting platform. Authentication
-    is handled via Firebase ID tokens supplied as Bearer tokens.
+  description: REST API for the UI comparison and voting platform.
+  contact:
+    name: UI Compare Team
+    email: support@example.com
 servers:
   - url: https://api.example.com
     description: Production Cloudflare Workers endpoint
@@ -12,10 +13,25 @@ servers:
     description: Staging environment
 security:
   - FirebaseAuth: []
+tags:
+  - name: Meta
+    description: Health and metadata endpoints
+  - name: Comparisons
+    description: Create and manage UI comparison entries
+  - name: Voting
+    description: Submit votes and fetch aggregated results
+  - name: My
+    description: Authenticated user owned resources
+  - name: Integrations
+    description: External service integrations and webhooks
+  - name: Admin
+    description: Administrative maintenance tasks
 paths:
   /api/v1/health:
     get:
       summary: Health check
+      description: Returns the service status for monitoring systems.
+      operationId: getHealth
       tags: [Meta]
       responses:
         '200':
@@ -27,6 +43,8 @@ paths:
   /api/v1/comparisons:
     get:
       summary: List published comparisons
+      description: Returns a paginated list of active or recently published comparisons.
+      operationId: listComparisons
       tags: [Comparisons]
       parameters:
         - in: query
@@ -61,6 +79,8 @@ paths:
                 $ref: '#/components/schemas/ComparisonListResponse'
     post:
       summary: Create a new comparison
+      description: Creates a draft comparison containing up to four StackBlitz-backed variants.
+      operationId: createComparison
       tags: [Comparisons]
       security:
         - FirebaseAuth: []
@@ -84,6 +104,8 @@ paths:
   /api/v1/comparisons/{comparisonId}:
     get:
       summary: Get comparison detail
+      description: Fetches metadata and variant information for a specific comparison.
+      operationId: getComparison
       tags: [Comparisons]
       parameters:
         - $ref: '#/components/parameters/ComparisonId'
@@ -98,6 +120,8 @@ paths:
           $ref: '#/components/responses/NotFound'
     patch:
       summary: Update comparison
+      description: Updates comparison metadata or variants when the caller owns the resource.
+      operationId: updateComparison
       tags: [Comparisons]
       security:
         - FirebaseAuth: []
@@ -127,6 +151,8 @@ paths:
   /api/v1/comparisons/{comparisonId}/publish:
     post:
       summary: Publish comparison
+      description: Transitions a comparison from draft to published status after validation passes.
+      operationId: publishComparison
       tags: [Comparisons]
       security:
         - FirebaseAuth: []
@@ -146,6 +172,8 @@ paths:
   /api/v1/comparisons/{comparisonId}/results:
     get:
       summary: Get comparison results
+      description: Returns aggregated vote counts, percentages, timeline and comment samples for a comparison.
+      operationId: getComparisonResults
       tags: [Voting]
       parameters:
         - $ref: '#/components/parameters/ComparisonId'
@@ -161,6 +189,8 @@ paths:
   /api/v1/votes:
     post:
       summary: Submit a vote
+      description: Records a single vote for one variant within a comparison, enforcing per-user limits.
+      operationId: submitVote
       tags: [Voting]
       security:
         - FirebaseAuth: []
@@ -187,7 +217,9 @@ paths:
           $ref: '#/components/responses/Conflict'
   /api/v1/me/comparisons:
     get:
-      summary: List comparisons owned by current user
+      summary: List owned comparisons
+      description: Returns comparisons created by the currently authenticated user.
+      operationId: listMyComparisons
       tags: [My]
       security:
         - FirebaseAuth: []
@@ -202,7 +234,9 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /api/v1/me/analytics:
     get:
-      summary: Analytics for the current user's comparisons
+      summary: Get analytics for owned comparisons
+      description: Provides aggregated analytics for the authenticated user’s comparisons.
+      operationId: getMyAnalytics
       tags: [My]
       security:
         - FirebaseAuth: []
@@ -217,9 +251,12 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /api/v1/webhooks/stackblitz:
     post:
-      summary: Handle StackBlitz project update webhook
+      summary: StackBlitz project update webhook
+      description: Accepts webhook notifications from StackBlitz to refresh project metadata. Requests must be signed.
+      operationId: handleStackblitzWebhook
       tags: [Integrations]
-      security: []
+      parameters:
+        - $ref: '#/components/parameters/StackblitzSignature'
       requestBody:
         required: true
         content:
@@ -236,7 +273,9 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /api/v1/admin/recalculate:
     post:
-      summary: Recalculate voting analytics (admin)
+      summary: Recalculate analytics (admin)
+      description: Triggers background recomputation of analytics data. Restricted to administrators.
+      operationId: recalculateAnalytics
       tags: [Admin]
       security:
         - FirebaseAuth: []
@@ -263,6 +302,15 @@ components:
       schema:
         type: string
         format: uuid
+    StackblitzSignature:
+      in: header
+      name: X-StackBlitz-Signature
+      description: >-
+        Signature header in the format `t=unix_timestamp,v1=HMAC_SHA256`. Used to
+        verify that the webhook payload originated from StackBlitz.
+      required: true
+      schema:
+        type: string
   responses:
     BadRequest:
       description: Bad request

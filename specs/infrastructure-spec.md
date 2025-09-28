@@ -32,6 +32,7 @@
   - `wrangler secret put FIREBASE_PROJECT_ID`
   - `wrangler secret put TURSO_CONNECTION_URL`
   - `wrangler secret put TURSO_AUTH_TOKEN`
+  - `wrangler secret put STACKBLITZ_WEBHOOK_SECRET`
 - KV / Durable Objects
   - キャッシュ用に Workers KV を利用する場合は `wrangler.toml` にバインディングを追加
 

@@ -49,8 +49,8 @@ erDiagram
       uuid id
       uuid comparisonId
       uuid userId
+      boolean turnstileVerified
       string idempotencyKey
-      string turnstileToken
       datetime submittedAt
     }
 
@@ -79,6 +79,7 @@ erDiagram
 - `SelectedVariant`: `variant-1` 〜 `variant-4`
 - `VoteLimitPolicy`: 1ユーザ1案件1投票、Turnstile検証が成功していること
 - `VoteIdempotencyKey`: `comparisonId:userId` 形式の文字列で、投票の冪等性を保障
+- `TurnstileVerification`: 真偽値。検証成功時のみ `true` を保持し、生データは保存しない
 
 ## 4. 主要不変条件
 1. `Comparison` に紐づく `UiVariant` は2〜4件

@@ -533,6 +533,9 @@ components:
         submittedAt:
           type: string
           format: date-time
+        turnstileVerified:
+          type: boolean
+          description: Indicates whether the Turnstile challenge was verified during submission
     ComparisonResultsResponse:
       type: object
       properties:

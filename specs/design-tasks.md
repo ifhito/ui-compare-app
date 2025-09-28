@@ -25,6 +25,7 @@
 - [ ] マイグレーション手順（`libsql` CLI または独自スクリプト）を整備し、ローカル/ステージング/本番の適用プロセスを定義
 - [ ] データ整合性ルール（多重投票防止キー、削除ポリシー、アーカイブ戦略）を記述
 - [ ] `vote_sessions` の冪等性キー戦略（`comparisonId:userId`）とユニーク制約運用、トランザクション制御 (`BEGIN IMMEDIATE`) を決定
+- [ ] Turnstile トークンは保存せず、`vote_sessions.turnstile_verified` フラグのみ保持する方針を仕様・実装で統一
 
 ## 4. 認証・セキュリティ
 - [ ] Firebase Authentication プロジェクトを作成し、使用するログインプロバイダとリダイレクトURLを設定
@@ -62,6 +63,7 @@
 - [ ] StackBlitz Webhook 用の HMAC 署名検証ユーティリティと再送/リプレイ対策（許容遅延 300 秒など）を実装
 - [ ] 公開API（閲覧用）と保護API（投稿・投票用）のバージョニングとドメイン分離を検討
 - [ ] OpenAPI 契約テスト（schemathesis など）の実施計画と CI 組み込み手順を整備
+- [ ] Cloudflare Queues を用いたドメインイベント配送計画（`specs/domain-events.md`）をレビューし、Terraform モジュールとコンシューマ実装のタスクに落とし込む
 
 ## 8. インフラ・デリバリー
 - [ ] Cloudflare Pages / Workers のビルド・デプロイパイプラインを `wrangler.toml` / GitHub Actions 等で構築

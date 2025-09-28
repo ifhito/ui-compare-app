@@ -23,6 +23,7 @@ StackBlitz WebContainers 上で動作する UI バリアントを共有し、投
 - `specs/design-tasks.md` – 実装タスクのチェックリスト
 - `specs/domain-model.md`, `specs/use-cases.md`, `specs/diagrams.md` – DDD モデル、ユースケース、ERD/シーケンス図
 - `specs/openapi.yaml` – API 契約（OpenAPI 3.0）
+- `specs/domain-events.md` – Cloudflare Queues によるドメインイベント配送計画
 
 ## API 契約とツールチェーン
 - ソース・オブ・トゥルースは `specs/openapi.yaml`

@@ -12,7 +12,7 @@
 2. **StackBlitz Webhook 署名検証**
    - Webhook の署名・リプレイ防止策を仕様に追記するとセキュリティが向上
 3. **Turnstile トークンの保存**
-   - `vote_sessions` に `turnstile_token` を保存すると扱いが重くなる可能性があり、検証済みフラグに置き換えることを検討
+   - 対応済み: `vote_sessions` に `turnstile_verified` を保持し、生トークンは永続化しない
 4. **API バージョニング / Contract 管理**
    - OpenAPI をソースオブトゥルースにすることで、フロント・バックのズレや破壊的変更を検知できる
 5. **ドメインイベントの配送**

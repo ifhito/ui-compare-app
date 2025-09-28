@@ -51,7 +51,7 @@ package.json
   - `VotingPolicyService`: Turnstile検証結果やレート制限を判定
   - `ComparisonPublicationService`: 公開・終了条件を管理
 
-ドメインイベントはアプリケーション層で購読し、必要に応じて Sentry/Logflare へ記録や通知を行う。
+ドメインイベントはアプリケーション層で生成後、Cloudflare Queues に enqueue し、キューコンシューマ（Worker）が Sentry/Logflare 連携や集計更新を実行する (`specs/domain-events.md` 参照)
 
 ## 4. アプリケーション層
 - コマンドユースケース
@@ -120,7 +120,7 @@ package.json
 - リポジトリインターフェース
   - `ComparisonRepository` : `save`, `findById`, `findPublished`, `listByOwner`
 - `VoteRepository` : `save`, `countByComparison`, `listRecent`
-- `VoteSessionRepository` : `findByIdempotencyKey`, `createWithIdempotency`
+- `VoteSessionRepository` : `findByIdempotencyKey`, `createWithIdempotency`（`turnstile_verified` を true で挿入）
 - インフラ実装では SQL テンプレートを `sql/` に分離し、Prepared Statement を利用
 - アプリケーション層ではトランザクション境界を明示し、`SubmitVote` では `BEGIN IMMEDIATE` → `INSERT vote_sessions ... ON CONFLICT DO NOTHING` → `INSERT votes ...` → `COMMIT` の順に実行。`vote_sessions` 挿入で衝突した場合は冪等性エラーを返却
 
@@ -128,6 +128,7 @@ package.json
 - Firebase IDトークン検証結果を `AuthUser` 値オブジェクトに変換
 - 所有者チェックはアプリケーション層で行い、ドメイン層では `Comparison` の `isOwnedBy(user)` を利用
 - Turnstile 検証結果は `VotingPolicyService` が評価し、ボット判定時は `DomainError('vote_not_allowed')`
+- Turnstile トークンは保存せず、検証済みフラグ `turnstile_verified` のみを `vote_sessions` に保持
 
 ## 10. レート制限・ボット対策
 - インターフェース層で `@hono/rate-limit` を適用

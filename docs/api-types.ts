@@ -188,6 +188,8 @@ export interface components {
       variantId?: string;
       /** Format: date-time */
       submittedAt?: string;
+      /** @description Indicates whether the Turnstile challenge was verified during submission */
+      turnstileVerified?: boolean;
     };
     ComparisonResultsResponse: {
       data?: {

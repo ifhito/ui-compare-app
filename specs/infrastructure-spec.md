@@ -9,6 +9,7 @@
 - 認証: Firebase Authentication（クライアント SDK・Workers からのトークン検証）
 - UIプレビュー: StackBlitz WebContainers でホストされる埋め込み iframe
 - 監視: Cloudflare Analytics, Sentry/Logflare
+- 非同期処理: Cloudflare Queues を利用し、イベント配送を実装予定（`specs/domain-events.md` を参照）
 
 ## 2. Cloudflare 環境 (IaC 管理)
 ### 2.1 Pages

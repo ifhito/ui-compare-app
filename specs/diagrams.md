@@ -46,7 +46,8 @@ erDiagram
       uuid id PK
       uuid comparison_id FK
       uuid user_id FK
-      string turnstile_token
+      string idempotency_key
+      integer turnstile_verified
       datetime submitted_at
     }
 

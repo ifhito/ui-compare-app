@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
 import { errorHandler } from './middleware/error-handler';
-import { registerBaseRoutes } from './interfaces/http/routes';
+import { registerRoutes, ApiBindings } from './interfaces/http/routes';
 
 export function createApp() {
-  const app = new Hono();
+  const app = new Hono<{ Bindings: ApiBindings; Variables: Record<string, unknown> }>();
   app.use('*', errorHandler);
 
-  registerBaseRoutes(app);
+  registerRoutes(app);
 
   return app;
 }

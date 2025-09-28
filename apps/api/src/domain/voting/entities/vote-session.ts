@@ -4,8 +4,6 @@ export interface VoteSessionProps {
   comparisonId: UUID;
   userId: UUID;
   idempotencyKey: string;
-  variantId: UUID;
-  comment?: string | null;
   turnstileVerified: boolean;
   createdAt: Date;
 }
@@ -17,7 +15,7 @@ export class VoteSession {
     if (!props.idempotencyKey.trim()) {
       throw new Error('idempotencyKey is required');
     }
-    return new VoteSession({ ...props, comment: props.comment ?? null });
+    return new VoteSession({ ...props });
   }
 
   get id() {
@@ -34,14 +32,6 @@ export class VoteSession {
 
   get idempotencyKey() {
     return this.props.idempotencyKey;
-  }
-
-  get variantId() {
-    return this.props.variantId;
-  }
-
-  get comment() {
-    return this.props.comment;
   }
 
   get turnstileVerified() {

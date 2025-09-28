@@ -59,13 +59,11 @@ export class SubmitVoteCommand {
     const idempotencyKey = `${input.comparisonId}:${input.userId}`;
     const now = new Date();
 
-    const session = VoteSession.create({
-      id: crypto.randomUUID(),
-      comparisonId: input.comparisonId,
-      userId: input.userId,
-      idempotencyKey,
-      variantId: input.variantId,
-      comment: input.comment ?? null,
+   const session = VoteSession.create({
+     id: crypto.randomUUID(),
+     comparisonId: input.comparisonId,
+     userId: input.userId,
+     idempotencyKey,
       turnstileVerified,
       createdAt: now,
     });

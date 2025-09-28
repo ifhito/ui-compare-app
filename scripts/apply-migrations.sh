@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! command -v libsql >/dev/null 2>&1; then
-  echo "error: libsql CLI is required. Install via 'brew install libsql' or refer to docs/turso-local.md" >&2
+if ! command -v turso >/dev/null 2>&1; then
+  echo "error: turso CLI is required. Install via 'brew install tursodatabase/tap/turso' or refer to docs/turso-local.md" >&2
   exit 1
 fi
 
@@ -25,7 +25,7 @@ fi
 
 for file in "${files[@]}"; do
   echo "Applying migration: $file"
-  libsql execute "$DATABASE_URL" "$(cat "$file")"
+  turso db shell "$DATABASE_URL" < "$file"
 done
 
 echo "Migrations applied successfully"

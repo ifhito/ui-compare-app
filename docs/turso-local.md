@@ -8,8 +8,8 @@
 
 ## 2. Docker Compose を利用した起動
 ```bash
-# Turso (libSQL) サーバを起動
-docker compose up turso
+# Turso (sqld) サーバを起動
+docker compose up -d turso
 ```
 
 `docker compose` が使用できない場合は以下コマンドでも同様に起動できます。
@@ -17,12 +17,13 @@ docker compose up turso
 docker run --rm \
   -p 8080:8080 \
   -p 5001:5001 \
-  -v "$(pwd)/db/data:/var/lib/libsql" \
-  -v "$(pwd)/db/migrations:/migrations" \
-  ghcr.io/tursodatabase/libsql-server:latest \
-  --http-listen-addr 0.0.0.0:8080 \
-  --hrana-listen-addr 0.0.0.0:5001 \
-  --dir /var/lib/libsql
+  -v "$(pwd)/db/data:/var/lib/sqld" \
+  ghcr.io/tursodatabase/sqld:latest \
+  sqld \
+    --http-listen-addr=0.0.0.0:8080 \
+    --hrana-listen-addr=0.0.0.0:5001 \
+    --dir=/var/lib/sqld \
+    --no-auth
 ```
 
 - HTTP API: `http://127.0.0.1:8080`
@@ -30,19 +31,19 @@ docker run --rm \
 - 認証: ローカル環境ではトークン不要（空文字列でアクセス可）
 
 ## 3. マイグレーションの適用
-Turso CLI (`turso` コマンド) もしくは `libsql` CLI を利用してマイグレーションを適用します。libSQL CLI を使用する例を掲載します。
+Turso CLI (`turso` コマンド) を利用してマイグレーションを適用します。
 
 ```bash
 # CLIのインストール (macOS Homebrew)
-brew install libsql
+brew install tursodatabase/tap/turso
 
 # マイグレーション適用
 for file in db/migrations/*.sql; do
-  libsql execute http://127.0.0.1:8080 "$(cat "$file")"
+  turso db shell http://127.0.0.1:8080 < "$file"
 done
 ```
 
-> **メモ**: `scripts/apply-migrations.sh` を提供しているので、`libsql` CLI が導入済みであれば `DATABASE_URL` を設定して実行できます。
+> **メモ**: `scripts/apply-migrations.sh` を提供しているので、`turso` CLI が導入済みであれば `DATABASE_URL` を設定して実行できます。
 
 ```bash
 DATABASE_URL=${DATABASE_URL:-http://127.0.0.1:8080} ./scripts/apply-migrations.sh

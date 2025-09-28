@@ -47,7 +47,7 @@ StackBlitz WebContainers 上で動作する UI バリアントを共有し、投
 - pnpm 10 以上
 - Docker / Docker Compose（ローカル DB 用）
 - Terraform 1.7 以上（IaC 適用時）
-- `libsql` CLI（ローカル DB マイグレーション用）
+- Turso CLI (`turso`)
 
 ### 初回セットアップ
 ```
@@ -60,7 +60,7 @@ pnpm test                # Vitest でユーティリティのテスト実行
 ### ローカル DB の起動
 ```
 docker compose up -d turso           # Turso (libSQL) を起動
-./scripts/apply-migrations.sh        # マイグレーション適用（libsql CLI が必要）
+./scripts/apply-migrations.sh        # マイグレーション適用（turso CLI が必要）
 ```
 
 - 初回マイグレーションで `db/migrations/0001_schema.sql` と `0002_add_turnstile_verified.sql` が適用されます。

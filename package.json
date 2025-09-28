@@ -1,0 +1,14 @@
+{
+  "name": "ui-compare-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:api": "node scripts/generate-api-types.mjs",
+    "lint:openapi": "spectral lint specs/openapi.yaml"
+  },
+  "devDependencies": {
+    "@stoplight/spectral-cli": "^6.11.1",
+    "openapi-typescript": "^6.7.2"
+  }
+}

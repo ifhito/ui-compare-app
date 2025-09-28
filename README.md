@@ -40,6 +40,48 @@ StackBlitz WebContainers 上で動作する UI バリアントを共有し、投
 - IaC: `infra/terraform/` に Terraform 定義を格納。`terraform apply -var-file=<env>.tfvars` で Cloudflare Pages/Workers と Turso をプロビジョニング
 - ローカル DB: `docker compose up turso` → `./scripts/apply-migrations.sh` で起動・マイグレーション（詳細は `docs/turso-local.md`）
 
+## 環境構築手順
+
+### 必要ツール
+- Node.js 20 以上（`node -v` で確認）
+- pnpm 10 以上
+- Docker / Docker Compose（ローカル DB 用）
+- Terraform 1.7 以上（IaC 適用時）
+- `libsql` CLI（ローカル DB マイグレーション用）
+
+### 初回セットアップ
+```
+pnpm install             # 依存パッケージを取得
+pnpm generate:api        # OpenAPI から型を生成
+pnpm lint:openapi        # OpenAPI の静的検証
+pnpm test                # Vitest でユーティリティのテスト実行
+```
+
+### ローカル DB の起動
+```
+docker compose up -d turso           # Turso (libSQL) を起動
+./scripts/apply-migrations.sh        # マイグレーション適用（libsql CLI が必要）
+```
+
+- 初回マイグレーションで `db/migrations/0001_schema.sql` と `0002_add_turnstile_verified.sql` が適用されます。
+- 詳細は `docs/turso-local.md` を参照してください。
+
+### Terraform による本番/ステージング構築
+```
+cd infra/terraform
+terraform init
+terraform plan  -var-file=dev.tfvars
+terraform apply -var-file=dev.tfvars
+```
+- `dev.tfvars` には Cloudflare/Turso/Firebase などのシークレットを設定します。
+- Terraform state は Terraform Cloud もしくは暗号化されたリモートストレージで管理することを推奨します。
+
+### ローカル動作確認（暫定）
+- 現在は仕様とユーティリティのみが整備されています。実装追加後は以下を目安に動作確認してください。
+  - フロントエンド: `pnpm dev` などで Vite 開発サーバを起動
+  - バックエンド: `wrangler dev` で Workers をローカル実行（Miniflare 利用）
+  - API 変更時は OpenAPI → 型生成 → テスト → ドキュメント更新の順で整合性を保つ
+
 ## コントリビューション
 - ルールは `AGENTS.md` を参照（命名規則やフォーマッタ運用など）
 - 作業は `feature/<topic>` ブランチで行い、PR 前に lint / test を実行

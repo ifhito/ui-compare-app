@@ -6,6 +6,8 @@ import { createTursoClient } from '../../infrastructure/persistence/turso-client
 import { TursoComparisonRepository } from '../../infrastructure/persistence/turso-comparison-repository';
 import { TursoVoteRepository } from '../../infrastructure/persistence/turso-vote-repository';
 import { TursoVoteSessionRepository } from '../../infrastructure/persistence/turso-vote-session-repository';
+import { TursoUserProfileRepository } from '../../infrastructure/persistence/turso-user-profile-repository';
+import { UserProfile } from '../../domain/user/entities/user-profile';
 import { CreateComparisonCommand } from '../../application/comparison/create-comparison';
 import { ListComparisonsQuery } from '../../application/comparison/list-comparisons';
 import { GetComparisonQuery } from '../../application/comparison/get-comparison';
@@ -117,6 +119,7 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
     c.set('comparisonRepository', new TursoComparisonRepository(client));
     c.set('voteRepository', new TursoVoteRepository(client));
     c.set('voteSessionRepository', new TursoVoteSessionRepository(client));
+    c.set('userProfileRepository', new TursoUserProfileRepository(client));
     c.set('turnstileVerifier', createTurnstileVerifier(env));
     c.set('rateLimiter', new NoopRateLimiter());
     return next();
@@ -160,6 +163,8 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
     if (!user) {
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
+    const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
+    await ensureUserProfile(userProfileRepo, user.uid, user);
     const comparison = await useCase.execute({
       id: crypto.randomUUID(),
       ownerId: user.uid,
@@ -187,6 +192,8 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
     if (!user) {
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
+    const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
+    await ensureUserProfile(userProfileRepo, user.uid, user);
     const comparison = await useCase.execute({
       id,
       ownerId: user.uid,
@@ -216,6 +223,8 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
     if (!user) {
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
+    const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
+    await ensureUserProfile(userProfileRepo, user.uid, user);
     const expiresAt = body.expiresAt ? new Date(body.expiresAt) : null;
     const comparison = await useCase.execute({
       id,
@@ -232,6 +241,8 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
     if (!user) {
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
+    const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
+    await ensureUserProfile(userProfileRepo, user.uid, user);
     const comparisons = await useCase.execute(user.uid);
     return c.json({ data: comparisons });
   });
@@ -277,4 +288,25 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
 
     return c.json({ data: vote }, 201);
   });
+}
+
+async function ensureUserProfile(
+  repo: TursoUserProfileRepository,
+  firebaseUid: string,
+  firebaseUser: { email?: string; displayName?: string | null },
+) {
+  const existing = await repo.findByFirebaseUid(firebaseUid);
+  if (existing) {
+    return existing;
+  }
+  const profile = UserProfile.create({
+    id: crypto.randomUUID(),
+    firebaseUid,
+    email: firebaseUser.email ?? null,
+    displayName: firebaseUser.displayName ?? null,
+    role: 'creator',
+    createdAt: new Date(),
+  });
+  await repo.upsert(profile);
+  return profile;
 }

@@ -164,10 +164,10 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
     const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
-  await ensureUserProfile(userProfileRepo, user.uid, user);
+    const profile = await ensureUserProfile(userProfileRepo, user.uid, user);
     const comparison = await useCase.execute({
       id: crypto.randomUUID(),
-      ownerId: user.uid,
+      ownerId: profile.id,
       title: body.title,
       summary: body.summary,
       tags: body.tags ?? [],
@@ -193,10 +193,10 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
     const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
-    await ensureUserProfile(userProfileRepo, user.uid, user);
+    const profile = await ensureUserProfile(userProfileRepo, user.uid, user);
     const comparison = await useCase.execute({
       id,
-      ownerId: user.uid,
+      ownerId: profile.id,
       title: body.title,
       summary: body.summary,
       tags: body.tags,
@@ -224,11 +224,11 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
     const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
-    await ensureUserProfile(userProfileRepo, user.uid, user);
+    const profile = await ensureUserProfile(userProfileRepo, user.uid, user);
     const expiresAt = body.expiresAt ? new Date(body.expiresAt) : null;
     const comparison = await useCase.execute({
       id,
-      ownerId: user.uid,
+      ownerId: profile.id,
       expiresAt,
     });
     return c.json({ data: comparison });
@@ -242,8 +242,8 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
     const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
-    await ensureUserProfile(userProfileRepo, user.uid, user);
-    const comparisons = await useCase.execute(user.uid);
+    const profile = await ensureUserProfile(userProfileRepo, user.uid, user);
+    const comparisons = await useCase.execute(profile.id);
     return c.json({ data: comparisons });
   });
 
@@ -268,6 +268,8 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
     const turnstileVerifier = c.get<TurnstileVerifier>('turnstileVerifier');
     const rateLimiter = c.get<RateLimiter>('rateLimiter');
     const eventBus = c.get<InMemoryEventBus>('eventBus');
+    const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
+    const profile = await ensureUserProfile(userProfileRepo, user.uid, user);
 
     const useCase = new SubmitVoteCommand(
       comparisonRepo,
@@ -278,9 +280,10 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
       eventBus,
     );
 
+    const profile = await ensureUserProfile(c.get('userProfileRepository'), user.uid, user);
     const { vote } = await useCase.execute({
       comparisonId: body.comparisonId,
-      userId: user.uid,
+      userId: profile.id,
       variantId: body.variantId,
       turnstileToken: body.turnstileToken,
       comment: body.comment ?? null,
@@ -300,7 +303,7 @@ async function ensureUserProfile(
     return existing;
   }
   const profile = UserProfile.create({
-    id: firebaseUid,
+    id: crypto.randomUUID(),
     firebaseUid,
     email: firebaseUser.email ?? null,
     displayName: firebaseUser.displayName ?? null,

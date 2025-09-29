@@ -67,6 +67,14 @@ docker compose up -d turso           # Turso (libSQL) を起動
 - 詳細は `docs/turso-local.md` を参照してください。
 - Apple Silicon (ARM) 環境では、`docker-compose.yml` 内の `platform: linux/amd64` 指定によりイメージを正しく起動できます。
 
+### Swagger UI での確認
+```
+pnpm dlx swagger-ui-watcher specs/openapi.yaml --port 8081
+```
+- ブラウザで http://localhost:8081 を開き、`Servers` ドロップダウンから `http://127.0.0.1:8787`（Local development）を選択してください。
+- 認証が必要なエンドポイントは `Authorization: Bearer test:<任意のUID>` のテストトークンでアクセスできます。
+- 別タブで `apps/api` ディレクトリから `pnpm dev` を実行し、Wrangler 開発サーバを起動しておく必要があります。
+
 ### Terraform による本番/ステージング構築
 ```
 cd infra/terraform

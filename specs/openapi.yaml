@@ -7,6 +7,8 @@ info:
     name: UI Compare Team
     email: support@example.com
 servers:
+  - url: http://127.0.0.1:8787
+    description: Local development (wrangler dev)
   - url: https://api.example.com
     description: Production Cloudflare Workers endpoint
   - url: https://staging-api.example.com

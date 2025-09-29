@@ -280,7 +280,6 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
       eventBus,
     );
 
-    const profile = await ensureUserProfile(c.get('userProfileRepository'), user.uid, user);
     const { vote } = await useCase.execute({
       comparisonId: body.comparisonId,
       userId: profile.id,

@@ -28,7 +28,7 @@ const variantSchema = z.object({
   label: z.string().min(1),
   stackblitzUrl: z.string().url(),
   thumbnailUrl: z.string().url().nullable().optional(),
-  displayOrder: z.number().int().min(0),
+  displayOrder: z.number().int().min(0).optional(),
 });
 
 const createComparisonSchema = z.object({

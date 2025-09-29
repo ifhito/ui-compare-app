@@ -164,7 +164,7 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
       return c.json({ code: 'unauthorized', message: 'Unauthorized' }, 401);
     }
     const userProfileRepo = c.get<TursoUserProfileRepository>('userProfileRepository');
-    await ensureUserProfile(userProfileRepo, user.uid, user);
+  await ensureUserProfile(userProfileRepo, user.uid, user);
     const comparison = await useCase.execute({
       id: crypto.randomUUID(),
       ownerId: user.uid,
@@ -300,7 +300,7 @@ async function ensureUserProfile(
     return existing;
   }
   const profile = UserProfile.create({
-    id: crypto.randomUUID(),
+    id: firebaseUid,
     firebaseUid,
     email: firebaseUser.email ?? null,
     displayName: firebaseUser.displayName ?? null,

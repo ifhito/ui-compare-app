@@ -92,7 +92,7 @@ export function registerRoutes(app: Hono<{ Bindings: ApiBindings; Variables: Rec
     const env = resolveEnv(c.env);
     const signature = c.req.header('x-stackblitz-signature');
     const payload = await c.req.text();
-    const verified = verifyStackblitzSignature({
+    const verified = await verifyStackblitzSignature({
       payload,
       signatureHeader: signature ?? '',
       secret: env.STACKBLITZ_WEBHOOK_SECRET,

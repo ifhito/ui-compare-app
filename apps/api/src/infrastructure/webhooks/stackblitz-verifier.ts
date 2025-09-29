@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 const SIGNATURE_VERSION = 'v1';
 const DEFAULT_TOLERANCE_SECONDS = 300;
@@ -29,17 +29,17 @@ export function verifyStackblitzSignature({
     return false;
   }
 
-  const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+  const expectedBuffer = new Uint8Array(Buffer.from(expectedSignature, 'hex'));
   return signatures.some((signature) => {
     if (typeof signature !== 'string' || signature.length !== expectedSignature.length) {
       return false;
     }
     try {
-      const candidate = Buffer.from(signature, 'hex');
-      if (candidate.length !== expectedBuffer.length) {
+      const candidate = new Uint8Array(Buffer.from(signature, 'hex'));
+      if (candidate.byteLength !== expectedBuffer.byteLength) {
         return false;
       }
-      return crypto.timingSafeEqual(candidate, expectedBuffer);
+      return timingSafeEqual(candidate, expectedBuffer);
     } catch {
       return false;
     }
@@ -69,5 +69,5 @@ function parseSignatureHeader(header: string) {
 
 function computeSignature(secret: string, payload: string, timestamp: number) {
   const message = `${timestamp}.${payload}`;
-  return crypto.createHmac('sha256', secret).update(message, 'utf8').digest('hex');
+  return createHmac('sha256', secret).update(message, 'utf8').digest('hex');
 }

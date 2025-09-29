@@ -20,7 +20,7 @@ import { InMemoryEventBus } from '../../application/shared/event-bus';
 import { authMiddleware, AUTH_USER_KEY } from '../../middleware/auth';
 import { RestFirebaseAuthVerifier, EmulatorFirebaseAuthVerifier, FirebaseAuthVerifier } from '../../infrastructure/auth/firebase-auth-verifier';
 import { getAuthUser } from '../../middleware/auth';
-import { verifyStackblitzSignature } from '../../../src/webhooks/stackblitz.js';
+import { verifyStackblitzSignature } from '../../infrastructure/webhooks/stackblitz-verifier';
 
 const variantSchema = z.object({
   label: z.string().min(1),
